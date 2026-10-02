@@ -36,9 +36,9 @@ class EmergencyBadge extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: const [
           Icon(Icons.warning_amber_rounded, size: 13, color: AppColors.emergency),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           Text("Emergency", style: TextStyle(color: AppColors.emergency, fontSize: 11, fontWeight: FontWeight.w700)),
         ],
       ),

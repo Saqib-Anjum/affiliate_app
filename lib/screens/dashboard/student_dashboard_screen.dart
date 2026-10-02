@@ -113,7 +113,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          children: const [
                             _Legend(color: AppColors.pending, label: "Pending"),
                             _Legend(color: AppColors.signup, label: "Signup"),
                             _Legend(color: AppColors.notInterested, label: "Not Interested"),

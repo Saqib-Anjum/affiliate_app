@@ -54,6 +54,6 @@ class ClientService {
   }
 
   Future<void> delete(String id) {
-    return _api.delete("/clients/$id", parse: (_) => null);
+    return _api.delete("/clients/$id", parse: (_) {});
   }
 }

@@ -4,10 +4,10 @@ class AppConstants {
   AppConstants._();
 
   // Base URL for the NestJS backend. Override at build time with:
-  //   flutter run --dart-define=API_BASE_URL=https://api.example.com/api
+  //   flutter run --dart-define=API_BASE_URL=https://affiliate.aidigitalcrm.cloud/api
   static const String apiBaseUrl = String.fromEnvironment(
     "API_BASE_URL",
-    defaultValue: "http://localhost:5000/api",
+    defaultValue: "https://affiliate.aidigitalcrm.cloud/api",
   );
 
   static const String tokenStorageKey = "csms_access_token";

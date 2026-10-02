@@ -11,7 +11,7 @@ run the following before trusting it fully:
 ```bash
 flutter pub get
 flutter analyze
-flutter run --dart-define=API_BASE_URL=http://localhost:5000/api
+flutter run --dart-define=API_BASE_URL=https://affiliate.aidigitalcrm.cloud/api
 ```
 Fix up anything the analyzer flags — most likely candidates are minor API surface drift in
 `share_plus`/`go_router`/`fl_chart` versions (pin exact versions in `pubspec.yaml` if you hit issues).
@@ -19,9 +19,9 @@ Fix up anything the analyzer flags — most likely candidates are minor API surf
 ## Setup
 ```bash
 flutter pub get
-flutter run --dart-define=API_BASE_URL=http://localhost:5000/api
+flutter run --dart-define=API_BASE_URL=https://affiliate.aidigitalcrm.cloud/api
 ```
-The base URL defaults to `http://localhost:5000/api` if not overridden (see `core/constants/app_constants.dart`).
+The base URL defaults to `https://affiliate.aidigitalcrm.cloud/api` if not overridden (see `core/constants/app_constants.dart`).
 
 ## Architecture
 ```

@@ -25,6 +25,6 @@ class MeetingService {
   }
 
   Future<void> cancel(String id) {
-    return _api.delete("/meetings/$id", parse: (_) => null);
+    return _api.delete("/meetings/$id", parse: (_) {});
   }
 }

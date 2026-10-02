@@ -70,7 +70,7 @@ class QuoteShareSheet extends StatelessWidget {
                 _ShareAction(
                   icon: Icons.ios_share_outlined,
                   label: "Share",
-                  onTap: () => Share.share(message),
+                  onTap: () => SharePlus.instance.share(ShareParams(text: message)),
                 ),
                 _ShareAction(
                   icon: Icons.copy_outlined,

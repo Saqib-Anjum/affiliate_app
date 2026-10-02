@@ -24,7 +24,7 @@ class MeetingCard extends StatelessWidget {
                   child: Text(meeting.topic, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                 ),
                 if (meeting.emergency)
-                  Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.emergency),
+                  const Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.emergency),
               ],
             ),
             const SizedBox(height: 6),

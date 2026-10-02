@@ -23,14 +23,14 @@ class StudentService {
   }
 
   Future<void> setActive(String id, bool isActive) {
-    return _api.patch("/students/$id/status", data: {"isActive": isActive}, parse: (_) => null);
+    return _api.patch("/students/$id/status", data: {"isActive": isActive}, parse: (_) {});
   }
 
   Future<void> resetPassword(String id, String newPassword) {
-    return _api.post("/students/$id/reset-password", data: {"newPassword": newPassword}, parse: (_) => null);
+    return _api.post("/students/$id/reset-password", data: {"newPassword": newPassword}, parse: (_) {});
   }
 
   Future<void> delete(String id) {
-    return _api.delete("/students/$id", parse: (_) => null);
+    return _api.delete("/students/$id", parse: (_) {});
   }
 }

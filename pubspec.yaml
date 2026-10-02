@@ -30,7 +30,7 @@ dependencies:
   fl_chart: ^0.69.0
 
   # Quote sharing
-  share_plus: ^10.0.2
+  share_plus: ^11.0.0
   url_launcher: ^6.3.0
 
   # Misc
