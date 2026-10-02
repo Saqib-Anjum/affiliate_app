@@ -1,0 +1,45 @@
+name: csms_app
+description: Client & Student Management System — Flutter app for admins and students.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Routing
+  go_router: ^14.2.7
+
+  # Networking
+  dio: ^5.7.0
+
+  # Secure token storage
+  flutter_secure_storage: ^9.2.2
+
+  # Formatting
+  intl: ^0.19.0
+
+  # Charts
+  fl_chart: ^0.69.0
+
+  # Quote sharing
+  share_plus: ^10.0.2
+  url_launcher: ^6.3.0
+
+  # Misc
+  equatable: ^2.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
