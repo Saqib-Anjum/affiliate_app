@@ -19,32 +19,41 @@ class StudentDashboardScreen extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider);
     final user = ref.watch(authProvider).user;
     final upcomingAsync = ref.watch(upcomingMeetingsProvider);
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Dashboard")),
       body: RefreshIndicator(
-        onRefresh: () async => ref.read(dashboardRefreshProvider.notifier).state++,
+        onRefresh: () async {
+          ref.invalidate(dashboardStatsProvider);
+          ref.invalidate(upcomingMeetingsProvider);
+          try {
+            await ref.read(dashboardStatsProvider.future);
+          } catch (_) {}
+        },
         child: statsAsync.when(
           loading: () => const LoadingWidget(),
           error: (e, _) => ErrorStateWidget(
             message: e.toString(),
-            onRetry: () => ref.read(dashboardRefreshProvider.notifier).state++,
+            onRetry: () {
+              ref.invalidate(dashboardStatsProvider);
+              ref.invalidate(upcomingMeetingsProvider);
+            },
           ),
           data: (stats) {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text("Welcome back, ${user?.fullName ?? "Student"}", style: Theme.of(context).textTheme.titleLarge),
+                Text("Welcome back, ${user?.fullName ?? "Student"}", style: textTheme.titleLarge),
                 const SizedBox(height: 4),
-                Text("Here is how your clients are performing.", style: TextStyle(color: Colors.grey.shade600)),
+                Text("Here is how your clients and earnings are performing.", style: textTheme.bodySmall),
                 const SizedBox(height: 16),
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.5,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1.35,
                   children: [
                     StatCard(
                       label: "Total Clients",
@@ -58,13 +67,13 @@ class StudentDashboardScreen extends ConsumerWidget {
                       color: AppColors.signup,
                     ),
                     StatCard(
-                      label: "Total Revenue",
+                      label: "Total Sales Revenue",
                       value: Formatters.currency(stats.totalRevenue),
                       icon: Icons.attach_money,
                       color: AppColors.signup,
                     ),
                     StatCard(
-                      label: "Payout",
+                      label: "Your Earnings",
                       value: Formatters.currency(stats.payout),
                       icon: Icons.account_balance_wallet_outlined,
                       color: AppColors.pending,
@@ -72,7 +81,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Text("Client Status", style: Theme.of(context).textTheme.titleMedium),
+                Text("Client Status Breakdown", style: textTheme.titleMedium),
                 const SizedBox(height: 12),
                 SizedBox(
                   height: 180,
@@ -127,7 +136,7 @@ class StudentDashboardScreen extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Upcoming Meetings", style: Theme.of(context).textTheme.titleMedium),
+                    Text("Upcoming Meetings", style: textTheme.titleMedium),
                     TextButton(
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const BookMeetingScreen()),
@@ -174,7 +183,7 @@ class _Legend extends StatelessWidget {
         children: [
           Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
           const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );

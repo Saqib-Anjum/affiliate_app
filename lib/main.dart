@@ -6,6 +6,8 @@ import "providers/auth_provider.dart";
 import "screens/auth/login_screen.dart";
 import "screens/shell/app_shell.dart";
 
+import "providers/theme_provider.dart";
+
 void main() {
   runApp(const ProviderScope(child: CsmsApp()));
 }
@@ -16,13 +18,14 @@ class CsmsApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(_routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: "CSMS",
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }
@@ -52,7 +55,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: "/",
         builder: (context, state) {
-          final status = ref.read(authProvider).status;
+          final status = ref.watch(authProvider).status;
           if (status == AuthStatus.unknown) {
             return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }

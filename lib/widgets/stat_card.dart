@@ -11,35 +11,50 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final accent = color ?? Theme.of(context).colorScheme.primary;
+
     return Card(
+      elevation: 0,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(label, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                    const SizedBox(height: 6),
                     Text(
-                      value,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                      label,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(fontSize: 11.5, height: 1.1),
+                    ),
+                    const SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        value,
+                        style: textTheme.titleLarge?.copyWith(fontSize: 19, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
               Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(color: accent.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                child: Icon(icon, color: accent),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: accent, size: 20),
               ),
             ],
           ),

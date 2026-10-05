@@ -8,7 +8,15 @@ import "storage_service.dart";
 /// envelope, and transparently refreshes the access token once on a 401
 /// before giving up and forcing a re-login.
 class ApiClient {
-  ApiClient(this._storage) : _dio = Dio(BaseOptions(baseUrl: AppConstants.apiBaseUrl)) {
+  ApiClient(this._storage)
+      : _dio = Dio(
+          BaseOptions(
+            baseUrl: AppConstants.apiBaseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 15),
+            sendTimeout: const Duration(seconds: 10),
+          ),
+        ) {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -106,7 +114,10 @@ class ApiClient {
     if (data is Map && data["message"] != null) {
       final m = data["message"];
       message = m is List ? m.join(", ") : m.toString();
-    } else if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.connectionError) {
+    } else if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout ||
+        e.type == DioExceptionType.connectionError) {
       message = "Could not reach the server. Check your connection.";
     }
     return ApiException(message, statusCode: e.response?.statusCode);

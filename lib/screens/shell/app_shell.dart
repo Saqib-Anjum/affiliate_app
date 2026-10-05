@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "../../providers/auth_provider.dart";
+import "../../widgets/app_header.dart";
 import "../clients/client_list_screen.dart";
 import "../dashboard/admin_dashboard_screen.dart";
 import "../dashboard/student_dashboard_screen.dart";
@@ -9,11 +10,7 @@ import "../profile/profile_screen.dart";
 import "../recordings/recordings_screen.dart";
 import "../students/student_list_screen.dart";
 
-/// Bottom navigation shell. Spec section 20:
-///   Student -> Dashboard, Clients, Meetings, Recordings, Profile
-///   Admin   -> Dashboard, Clients, Students, Meetings, Recordings, Profile
-/// (Admin's Payments/Payouts/Settings pages are reachable from the dashboard
-/// and profile menus to keep the bottom bar within a comfortable item count.)
+/// Bottom navigation shell with global AiDx header and inline single-line bottom bar tabs.
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
@@ -26,7 +23,8 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isAdmin = ref.watch(authProvider).user?.isAdmin ?? false;
+    final user = ref.watch(authProvider).user;
+    final isAdmin = user?.isAdmin ?? false;
 
     final destinations = <_ShellDestination>[
       _ShellDestination(
@@ -69,18 +67,43 @@ class _AppShellState extends ConsumerState<AppShell> {
     ];
 
     final safeIndex = _index < destinations.length ? _index : 0;
+    final currentDest = destinations[safeIndex];
 
     return Scaffold(
+      appBar: AppHeader(
+        title: currentDest.label,
+        subtitle: isAdmin ? "Admin Portal" : "Student Portal",
+      ),
       body: IndexedStack(
         index: safeIndex,
         children: destinations.map((d) => d.screen).toList(),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: safeIndex,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: destinations
-            .map((d) => NavigationDestination(icon: Icon(d.icon), selectedIcon: Icon(d.selectedIcon), label: d.label))
-            .toList(),
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          height: 64,
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final isSelected = states.contains(WidgetState.selected);
+            return TextStyle(
+              fontSize: isAdmin ? 9.5 : 11.0,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              overflow: TextOverflow.ellipsis,
+            );
+          }),
+        ),
+        child: NavigationBar(
+          selectedIndex: safeIndex,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          onDestinationSelected: (i) => setState(() => _index = i),
+          destinations: destinations
+              .map(
+                (d) => NavigationDestination(
+                  icon: Icon(d.icon, size: 22),
+                  selectedIcon: Icon(d.selectedIcon, size: 22),
+                  label: d.label,
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }

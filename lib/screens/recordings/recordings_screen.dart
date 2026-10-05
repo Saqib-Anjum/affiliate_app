@@ -6,8 +6,7 @@ import "../../core/widgets/state_widgets.dart";
 import "../../providers/recording_provider.dart";
 import "../../widgets/recording_card.dart";
 
-/// Spec section 12/19: "Client Meeting Recordings" screen, with client-side
-/// search since the backend recordings list is already scoped by ownership.
+/// "Client Meeting Recordings" screen with client-side search.
 class RecordingsScreen extends ConsumerStatefulWidget {
   const RecordingsScreen({super.key});
 
@@ -23,7 +22,6 @@ class _RecordingsScreenState extends ConsumerState<RecordingsScreen> {
     final recordingsAsync = ref.watch(recordingsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Client Meeting Recordings")),
       body: Column(
         children: [
           Padding(

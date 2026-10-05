@@ -7,6 +7,7 @@ import "../../core/widgets/state_widgets.dart";
 import "../../providers/auth_provider.dart";
 import "../../providers/client_provider.dart";
 import "../../providers/recording_provider.dart";
+import "../../widgets/app_header.dart";
 import "../../widgets/client_status_badge.dart";
 import "../../widgets/quote_share_sheet.dart";
 import "../../widgets/recording_card.dart";
@@ -23,8 +24,9 @@ class ClientDetailScreen extends ConsumerWidget {
     final isAdmin = ref.watch(authProvider).user?.isAdmin ?? false;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Client Details"),
+      appBar: AppHeader(
+        showBackButton: true,
+        title: "Client Details",
         actions: [
           clientAsync.maybeWhen(
             data: (client) => IconButton(
@@ -50,6 +52,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   Expanded(
                     child: Text(client.fullName, style: Theme.of(context).textTheme.titleLarge),
                   ),
+                  const SizedBox(width: 8),
                   ClientStatusBadge(status: client.status),
                 ],
               ),
@@ -107,8 +110,12 @@ class ClientDetailScreen extends ConsumerWidget {
               ),
 
               _Section(
-                title: "Quote / Pricing",
+                title: "Quote & Pricing",
                 trailing: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    visualDensity: VisualDensity.compact,
+                  ),
                   icon: const Icon(Icons.ios_share_outlined, size: 16),
                   label: const Text("Share Quote"),
                   onPressed: () => showModalBottomSheet(
@@ -122,9 +129,15 @@ class ClientDetailScreen extends ConsumerWidget {
                     _Row(label: "Quote Amount", value: Formatters.currency(client.quoteAmount, code: client.currency)),
                     _Row(label: "Discount", value: Formatters.currency(client.discount, code: client.currency)),
                     _Row(label: "Final Price", value: Formatters.currency(client.finalPrice, code: client.currency)),
-                    if (client.isClosedSale) ...[
-                      _Row(label: "Sale Amount", value: Formatters.currency(client.saleAmount, code: client.currency)),
-                      _Row(label: "Payout Amount", value: Formatters.currency(client.payoutAmount)),
+                    if (isAdmin) ...[
+                      _Row(
+                        label: "Sale Amount",
+                        value: Formatters.currency(client.saleAmount ?? (client.isClosedSale ? client.finalPrice : null), code: client.currency),
+                      ),
+                      _Row(
+                        label: "Student Revenue",
+                        value: Formatters.currency(client.studentRevenue, code: client.currency),
+                      ),
                     ],
                   ],
                 ),
@@ -133,6 +146,10 @@ class ClientDetailScreen extends ConsumerWidget {
               _Section(
                 title: "Meeting",
                 trailing: TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    visualDensity: VisualDensity.compact,
+                  ),
                   icon: const Icon(Icons.event_outlined, size: 16),
                   label: const Text("Book Meeting"),
                   onPressed: () => Navigator.of(context).push(
@@ -140,7 +157,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 child: client.meetingDate == null
-                    ? Text("No meeting scheduled yet.", style: TextStyle(color: Colors.grey.shade600))
+                    ? Text("No meeting scheduled yet.", style: Theme.of(context).textTheme.bodySmall)
                     : Column(
                         children: [
                           _Row(label: "Date", value: Formatters.date(client.meetingDate)),
@@ -170,7 +187,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   error: (e, _) => Text("Could not load recordings", style: TextStyle(color: Colors.red.shade600)),
                   data: (recordings) {
                     if (recordings.isEmpty) {
-                      return Text("No recordings yet.", style: TextStyle(color: Colors.grey.shade600));
+                      return Text("No recordings yet.", style: Theme.of(context).textTheme.bodySmall);
                     }
                     return Column(
                       children: recordings
@@ -229,9 +246,15 @@ class _Section extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
                 if (trailing != null) trailing!,
               ],
             ),
@@ -257,9 +280,20 @@ class _Row extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey.shade600)),
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
           Flexible(
+            flex: 3,
             child: GestureDetector(
               onTap: isLink && value != null && value!.isNotEmpty
                   ? () => launchUrl(Uri.parse(value!.startsWith("http") ? value! : "https://$value"))
@@ -268,8 +302,9 @@ class _Row extends StatelessWidget {
                 display,
                 textAlign: TextAlign.right,
                 style: TextStyle(
-                  color: isLink ? Theme.of(context).colorScheme.primary : null,
+                  color: isLink ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.bodyMedium?.color,
                   decoration: isLink ? TextDecoration.underline : null,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

@@ -27,6 +27,8 @@ class MeetingActions {
   Future<void> cancel(String id) async {
     await _ref.read(meetingServiceProvider).cancel(id);
     _ref.read(dashboardRefreshProvider.notifier).state++;
+    _ref.invalidate(upcomingMeetingsProvider);
+    _ref.invalidate(allMeetingsProvider);
   }
 }
 

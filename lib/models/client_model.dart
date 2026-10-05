@@ -50,6 +50,10 @@ class ClientModel {
   // the authoritative sale amount -- saleAmount stays the source of truth.
   double get finalPrice => (quoteAmount ?? 0) - (discount ?? 0);
 
+  /// Student Revenue / Payout amount.
+  /// Defaults to 20% of saleAmount if payoutAmount is not explicitly set.
+  double get studentRevenue => payoutAmount ?? ((saleAmount ?? 0) * 0.20);
+
   ClientModel copyWith({String? status, bool? emergencyMeeting}) {
     return ClientModel(
       id: id,

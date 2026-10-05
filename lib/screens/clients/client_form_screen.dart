@@ -4,7 +4,9 @@ import "../../core/constants/app_constants.dart";
 import "../../core/validators/validators.dart";
 import "../../core/widgets/custom_button.dart";
 import "../../models/client_model.dart";
+import "../../providers/auth_provider.dart";
 import "../../providers/client_provider.dart";
+import "../../widgets/app_header.dart";
 
 /// Handles both "create" (client == null) and editing an existing client.
 class ClientFormScreen extends ConsumerStatefulWidget {
@@ -24,6 +26,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   late TextEditingController _notesController;
   late TextEditingController _quoteController;
   late TextEditingController _discountController;
+  late TextEditingController _saleController;
+  late TextEditingController _studentRevenueController;
 
   String? _niche;
   bool _customNiche = false;
@@ -31,6 +35,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   bool _emergency = false;
   bool _saving = false;
   String? _error;
+  bool _userEditedRevenue = false;
 
   bool get _isEditing => widget.existing != null;
 
@@ -45,6 +50,15 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     _notesController = TextEditingController(text: c?.notes ?? "");
     _quoteController = TextEditingController(text: c?.quoteAmount?.toString() ?? "");
     _discountController = TextEditingController(text: c?.discount?.toString() ?? "");
+    _saleController = TextEditingController(text: c?.saleAmount?.toString() ?? "");
+    _studentRevenueController = TextEditingController(
+      text: c?.payoutAmount?.toString() ?? (c?.saleAmount != null ? (c!.saleAmount! * 0.20).toStringAsFixed(2) : ""),
+    );
+
+    if (c?.payoutAmount != null) {
+      _userEditedRevenue = true;
+    }
+
     _emergency = c?.emergencyMeeting ?? false;
     if (c?.businessNiche != null && AppConstants.businessNiches.contains(c!.businessNiche)) {
       _niche = c.businessNiche;
@@ -52,10 +66,24 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       _customNiche = true;
       _customNicheController.text = c!.businessNiche!;
     }
+
+    _saleController.addListener(_onSaleAmountChanged);
+  }
+
+  void _onSaleAmountChanged() {
+    if (_userEditedRevenue) return;
+    final sale = double.tryParse(_saleController.text.trim());
+    if (sale != null && sale > 0) {
+      final defaultRevenue = sale * 0.20;
+      _studentRevenueController.text = defaultRevenue.toStringAsFixed(2);
+    } else if (_saleController.text.trim().isEmpty) {
+      _studentRevenueController.text = "";
+    }
   }
 
   @override
   void dispose() {
+    _saleController.removeListener(_onSaleAmountChanged);
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
@@ -63,6 +91,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
     _notesController.dispose();
     _quoteController.dispose();
     _discountController.dispose();
+    _saleController.dispose();
+    _studentRevenueController.dispose();
     _customNicheController.dispose();
     super.dispose();
   }
@@ -76,7 +106,10 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       _error = null;
     });
 
+    final isAdmin = ref.read(authProvider).user?.isAdmin ?? false;
     final niche = _customNiche ? _clean(_customNicheController.text) : _niche;
+    final saleVal = isAdmin ? double.tryParse(_saleController.text.trim()) : widget.existing?.saleAmount;
+    final revenueVal = isAdmin ? double.tryParse(_studentRevenueController.text.trim()) : widget.existing?.payoutAmount;
 
     try {
       final actions = ref.read(clientActionsProvider);
@@ -91,6 +124,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
           "emergencyMeeting": _emergency,
           if (_quoteController.text.trim().isNotEmpty)
             "quoteAmount": double.tryParse(_quoteController.text.trim()) ?? 0,
+          if (isAdmin && saleVal != null) "saleAmount": saleVal,
+          if (isAdmin && revenueVal != null) "payoutAmount": revenueVal,
         };
         await actions.update(widget.existing!.id, patch);
       } else {
@@ -106,6 +141,8 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             notes: _clean(_notesController.text),
             emergencyMeeting: _emergency,
             quoteAmount: double.tryParse(_quoteController.text.trim()),
+            saleAmount: isAdmin ? saleVal : null,
+            payoutAmount: isAdmin ? revenueVal : null,
           ),
         );
       }
@@ -119,10 +156,12 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = ref.watch(authProvider).user?.isAdmin ?? false;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? "Edit Client Profile" : "New Client Entry"),
-        centerTitle: false,
+      appBar: AppHeader(
+        showBackButton: true,
+        title: _isEditing ? "Edit Client Profile" : "New Client Entry",
       ),
       body: Form(
         key: _formKey,
@@ -234,7 +273,9 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
 
             _FormCardSection(
               title: "Quote & Financials",
-              subtitle: "Initial quote and expected pricing",
+              subtitle: isAdmin
+                  ? "Quote, sale amount & student revenue share"
+                  : "Initial quote and expected pricing",
               children: [
                 Row(
                   children: [
@@ -265,6 +306,34 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                     ),
                   ],
                 ),
+                if (isAdmin) ...[
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _saleController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: "Sale Amount (Closed Sale)",
+                      hintText: "e.g. 1000.00",
+                      prefixIcon: Icon(Icons.payments_outlined),
+                    ),
+                    validator: (v) => Validators.positiveNumber(v),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _studentRevenueController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (_) {
+                      _userEditedRevenue = true;
+                    },
+                    decoration: const InputDecoration(
+                      labelText: "Student Revenue (20% default of Sale)",
+                      hintText: "Auto-calculated 20% or custom amount",
+                      prefixIcon: Icon(Icons.account_balance_wallet_outlined),
+                      helperText: "By default, student revenue is 20% of sale amount. Admin can edit/override.",
+                    ),
+                    validator: (v) => Validators.positiveNumber(v),
+                  ),
+                ],
               ],
             ),
 
@@ -288,7 +357,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: _emergency ? const Color(0xFFFEF2F2) : const Color(0xFFF8FAFC),
+                    color: _emergency ? const Color(0xFFFEF2F2) : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: _emergency ? const Color(0xFFFCA5A5) : const Color(0xFFE2E8F0),
@@ -310,7 +379,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
-                            color: _emergency ? const Color(0xFF991B1B) : Colors.black87,
+                            color: _emergency ? const Color(0xFF991B1B) : Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                         ),
                       ],
@@ -353,18 +422,14 @@ class _FormCardSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: -0.2)),
+            Text(title, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 2),
-            Text(subtitle, style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+            Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 16),
             ...children,
           ],

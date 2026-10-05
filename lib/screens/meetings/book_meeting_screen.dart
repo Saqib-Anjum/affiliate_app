@@ -6,6 +6,7 @@ import "../../core/widgets/custom_button.dart";
 import "../../models/meeting_model.dart";
 import "../../providers/client_provider.dart";
 import "../../providers/meeting_provider.dart";
+import "../../widgets/app_header.dart";
 
 class BookMeetingScreen extends ConsumerStatefulWidget {
   const BookMeetingScreen({super.key, this.clientId, this.clientName});
@@ -97,9 +98,9 @@ class _BookMeetingScreenState extends ConsumerState<BookMeetingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Schedule Zoom Meeting"),
-        centerTitle: false,
+      appBar: const AppHeader(
+        showBackButton: true,
+        title: "Schedule Zoom Meeting",
       ),
       body: Form(
         key: _formKey,

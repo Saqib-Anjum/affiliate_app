@@ -15,30 +15,39 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
     final revenueByStudentAsync = ref.watch(adminRevenueByStudentProvider);
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Admin Dashboard")),
       body: RefreshIndicator(
-        onRefresh: () async => ref.read(dashboardRefreshProvider.notifier).state++,
+        onRefresh: () async {
+          ref.invalidate(dashboardStatsProvider);
+          ref.invalidate(adminRevenueByStudentProvider);
+          try {
+            await ref.read(dashboardStatsProvider.future);
+          } catch (_) {}
+        },
         child: statsAsync.when(
           loading: () => const LoadingWidget(),
           error: (e, _) => ErrorStateWidget(
             message: e.toString(),
-            onRetry: () => ref.read(dashboardRefreshProvider.notifier).state++,
+            onRetry: () {
+              ref.invalidate(dashboardStatsProvider);
+              ref.invalidate(adminRevenueByStudentProvider);
+            },
           ),
           data: (stats) {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text("System-wide statistics", style: Theme.of(context).textTheme.titleLarge),
+                Text("System-wide statistics", style: textTheme.titleLarge),
                 const SizedBox(height: 16),
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.5,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1.35,
                   children: [
                     StatCard(label: "Total Students", value: "${stats.totalStudents ?? 0}", icon: Icons.school_outlined),
                     StatCard(label: "Total Clients", value: "${stats.totalClients}", icon: Icons.people_outline),
@@ -55,7 +64,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       color: AppColors.signup,
                     ),
                     StatCard(
-                      label: "Total Payout",
+                      label: "Student Revenue (Payout)",
                       value: Formatters.currency(stats.payout),
                       icon: Icons.account_balance_wallet_outlined,
                       color: AppColors.pending,
@@ -71,7 +80,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text("Revenue by Student", style: Theme.of(context).textTheme.titleMedium),
+                Text("Revenue by Student", style: textTheme.titleMedium),
                 const SizedBox(height: 12),
                 revenueByStudentAsync.when(
                   loading: () => const LoadingWidget(),
@@ -110,7 +119,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                                     padding: const EdgeInsets.only(top: 6),
                                     child: Text(
                                       name.length > 8 ? "${name.substring(0, 8)}…" : name,
-                                      style: const TextStyle(fontSize: 10),
+                                      style: textTheme.bodySmall?.copyWith(fontSize: 10),
                                     ),
                                   );
                                 },

@@ -17,7 +17,6 @@ class ClientListScreen extends ConsumerWidget {
     final filters = ref.watch(clientFiltersProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Clients")),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: "client_fab",
         onPressed: () => Navigator.of(context).push(

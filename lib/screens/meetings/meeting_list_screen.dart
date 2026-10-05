@@ -21,7 +21,6 @@ class _MeetingListScreenState extends ConsumerState<MeetingListScreen> {
     final meetingsAsync = _upcomingOnly ? ref.watch(upcomingMeetingsProvider) : ref.watch(allMeetingsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Meetings")),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: "meeting_fab",
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const BookMeetingScreen())),
@@ -60,7 +59,37 @@ class _MeetingListScreenState extends ConsumerState<MeetingListScreen> {
                           ? () => launchUrl(Uri.parse(meeting.zoomJoinUrl!))
                           : null,
                       onCancel: () async {
-                        await ref.read(meetingActionsProvider).cancel(meeting.id);
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text("Cancel Meeting?"),
+                            content: Text("Are you sure you want to cancel '${meeting.topic}'?"),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("No")),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                child: const Text("Yes, Cancel"),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true) {
+                          try {
+                            await ref.read(meetingActionsProvider).cancel(meeting.id);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Meeting cancelled successfully")),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Failed to cancel meeting: $e")),
+                              );
+                            }
+                          }
+                        }
                       },
                     );
                   },

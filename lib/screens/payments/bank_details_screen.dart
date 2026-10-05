@@ -4,6 +4,7 @@ import "../../core/constants/app_constants.dart";
 import "../../core/widgets/custom_button.dart";
 import "../../core/widgets/state_widgets.dart";
 import "../../providers/payment_provider.dart";
+import "../../widgets/app_header.dart";
 
 class BankDetailsScreen extends ConsumerStatefulWidget {
   const BankDetailsScreen({super.key});
@@ -71,9 +72,9 @@ class _BankDetailsScreenState extends ConsumerState<BankDetailsScreen> {
     final existingAsync = ref.watch(bankDetailsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Payout & Bank Configuration"),
-        centerTitle: false,
+      appBar: const AppHeader(
+        showBackButton: true,
+        title: "Payout & Bank Configuration",
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),

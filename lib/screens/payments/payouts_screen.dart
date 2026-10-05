@@ -4,6 +4,7 @@ import "../../core/theme/app_theme.dart";
 import "../../core/utils/formatters.dart";
 import "../../core/widgets/state_widgets.dart";
 import "../../providers/payment_provider.dart";
+import "../../widgets/app_header.dart";
 
 class PayoutsScreen extends ConsumerWidget {
   const PayoutsScreen({super.key});
@@ -13,7 +14,10 @@ class PayoutsScreen extends ConsumerWidget {
     final payoutsAsync = ref.watch(payoutsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Payout History")),
+      appBar: const AppHeader(
+        showBackButton: true,
+        title: "Payout History",
+      ),
       body: payoutsAsync.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => ErrorStateWidget(message: e.toString()),

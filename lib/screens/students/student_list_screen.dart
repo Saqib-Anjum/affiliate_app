@@ -13,9 +13,9 @@ class StudentListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final studentsAsync = ref.watch(studentsProvider);
+    final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Manage Students")),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: "student_fab",
         onPressed: () => showModalBottomSheet(
@@ -53,23 +53,19 @@ class StudentListScreen extends ConsumerWidget {
                     final student = result.data[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        title: Text(student.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        title: Text(student.fullName, style: textTheme.titleMedium),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             "${student.email}\nLast login: ${student.lastLoginAt != null ? Formatters.dateTime(student.lastLoginAt) : "Never"}",
-                            style: const TextStyle(fontSize: 12, height: 1.4),
+                            style: textTheme.bodySmall?.copyWith(height: 1.4),
                           ),
                         ),
                         isThreeLine: true,
                         trailing: Switch(
-                          activeColor: const Color(0xFF2563EB),
+                          activeThumbColor: const Color(0xFF2563EB),
                           value: student.isActive,
                           onChanged: (v) => ref.read(studentActionsProvider).setActive(student.id, v),
                         ),
